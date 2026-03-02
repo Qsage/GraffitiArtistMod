@@ -1,39 +1,42 @@
 package com.qsage.graffitiartistmod.common.block;
 
 import com.qsage.graffitiartistmod.common.blockentity.GraffitiBlockEntity;
-import com.qsage.graffitiartistmod.common.registration.ModBlockEntities;
+import com.qsage.graffitiartistmod.common.network.ModMessages;
+import com.qsage.graffitiartistmod.common.network.PacketDrawPixel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.phys.BlockHitResult;
 
 public class GraffitiBlock extends Block implements EntityBlock {
-
-    public GraffitiBlock(Properties properties) {
-        super(properties);
+    public GraffitiBlock(Properties props) {
+        super(props);
     }
 
-    // 1. Связываем блок с нашим BlockEntity
-    @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return ModBlockEntities.GRAFFITI_BE.get().create(pos, state);
+        return new GraffitiBlockEntity(pos, state);
     }
 
-    // 2. Указываем, как рендерить сам КУБ блока
     @Override
-    public RenderShape getRenderShape(BlockState state) {
-        // MODEL означает, что блок будет использовать обычную JSON-модель (как камень)
-        // Если хочешь, чтобы блок был невидимым (только граффити), выбери INVISIBLE
-        return RenderShape.MODEL;
-    }
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (level.isClientSide) {
+            // Вычисляем пиксель 0-15
+            double fx = hit.getLocation().x - pos.getX();
+            double fy = hit.getLocation().y - pos.getY();
 
-    // 3. (Опционально) Если хочешь, чтобы через блок проходил свет
-    @Override
-    public boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
-        return true;
+            int px = (int)(fx * 16);
+            int py = (int)(fy * 16);
+
+            // Отправляем пакет на сервер (нужно создать PacketDrawPixel)
+            ModMessages.sendToServer(new PacketDrawPixel(pos, px, py, (byte)1));
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 }
