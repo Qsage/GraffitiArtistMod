@@ -1,4 +1,4 @@
-package qsage.graffitiartistmod;
+package com.qsage.graffitiartistmod;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
@@ -30,8 +30,8 @@ import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
-@Mod(Graffitiartistmod.MODID)
-public class Graffitiartistmod {
+@Mod(GraffitiArtistMod.MODID)
+public class GraffitiArtistMod {
 
     // Define mod id in a common place for everything to reference
     public static final String MODID = "graffitiartistmod";
@@ -57,7 +57,7 @@ public class Graffitiartistmod {
         output.accept(EXAMPLE_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the event
     }).build());
 
-    public Graffitiartistmod() {
+    public GraffitiArtistMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         // Register the commonSetup method for modloading

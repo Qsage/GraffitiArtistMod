@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Specification-Title: graffitiartistmod
+Specification-Vendor: 
+Specification-Version: 1
+Implementation-Title: graffitiartistmod
+Implementation-Version: 1.0-SNAPSHOT
+Implementation-Vendor: 
+Implementation-Timestamp: 2026-03-02T08:46:52+0300
+MixinConfigs: graffitiartistmod.mixins.json
+
