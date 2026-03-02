@@ -1,6 +1,7 @@
-package com.qsage.graffitiartistmod.common.network;
+package com.qsage.graffitiartistmod.common.network.packet;
 
 import com.qsage.graffitiartistmod.common.blockentity.GraffitiBlockEntity;
+import com.qsage.graffitiartistmod.common.network.ModMessages;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
@@ -40,15 +41,12 @@ public class PacketDrawPixel {
     // Обработчик: что делать, когда пакет пришел на сервер
     public boolean handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
+        // Внутри PacketDrawPixel
         context.enqueueWork(() -> {
-            // МЫ НА СЕРВЕРЕ
             ServerLevel level = context.getSender().serverLevel();
             if (level.getBlockEntity(pos) instanceof GraffitiBlockEntity be) {
-                // 1. Меняем пиксель в данных блока
                 be.setPixel(x, y, color);
-
-                // 2. Рассылаем это изменение ВСЕМ игрокам вокруг,
-                // чтобы они тоже увидели этот новый пиксель у себя на экранах
+                // ВАЖНО: Отправляем пакет синхронизации обратно клиентам!
                 ModMessages.sendToClients(new PacketSyncGraffiti(pos, be.getPixels()));
             }
         });

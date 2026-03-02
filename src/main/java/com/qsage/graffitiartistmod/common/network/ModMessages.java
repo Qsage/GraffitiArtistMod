@@ -1,6 +1,8 @@
 package com.qsage.graffitiartistmod.common.network;
 
 import com.qsage.graffitiartistmod.GraffitiArtistMod;
+import com.qsage.graffitiartistmod.common.network.packet.PacketDrawPixel;
+import com.qsage.graffitiartistmod.common.network.packet.PacketSyncGraffiti;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;

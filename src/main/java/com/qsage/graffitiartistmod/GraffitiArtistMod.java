@@ -52,17 +52,25 @@ public class GraffitiArtistMod {
     public GraffitiArtistMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        ModBlocks.register(modEventBus); // 1. Сначала блоки
-        ModItems.register(modEventBus);  // 2. Потом предметы (они зависят от блоков)
-        ModBlockEntities.register(modEventBus);
+        // ПОРЯДОК ОЧЕНЬ ВАЖЕН:
+        ModBlocks.register(modEventBus);        // 1. Сначала блоки
+        ModItems.register(modEventBus);         // 2. Потом предметы
+        ModBlockEntities.register(modEventBus);  // 3. Потом сущности блоков
         CREATIVE_MODE_TABS.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::addCreative);
 
-        ModMessages.register(); // Убедись, что это вызвано!
+        ModMessages.register(); // Убедись, что сетевые сообщения тоже тут
 
         MinecraftForge.EVENT_BUS.register(this);
+        modEventBus.addListener(this::registerRenderers);
+    }
+
+    private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        // Привязываем наш кастомный рендерер к сущности блока
+        event.registerBlockEntityRenderer(ModBlockEntities.GRAFFITI_BE.get(),
+                GraffitiBlockEntityRenderer::new);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
@@ -90,8 +98,7 @@ public class GraffitiArtistMod {
         // ДОБАВЬ ЭТОТ МЕТОД ДЛЯ РЕНДЕРА:
         @SubscribeEvent
         public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-            event.registerBlockEntityRenderer(ModBlockEntities.GRAFFITI_BE.get(),
-                    GraffitiBlockEntityRenderer::new);
+            event.registerBlockEntityRenderer(ModBlockEntities.GRAFFITI_BE.get(), GraffitiBlockEntityRenderer::new);
         }
     }
 

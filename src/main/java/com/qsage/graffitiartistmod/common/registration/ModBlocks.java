@@ -18,10 +18,7 @@ public class ModBlocks {
             DeferredRegister.create(ForgeRegistries.BLOCKS, GraffitiArtistMod.MOD_ID);
 
     public static final RegistryObject<Block> GRAFFITI_BLOCK = BLOCKS.register("graffiti_block",
-            () -> new GraffitiBlock(BlockBehaviour.Properties.copy(Blocks.AIR)
-                    .strength(0.1f)
-                    .noOcclusion()
-                    .noCollission()));
+            () -> new GraffitiBlock(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).noOcclusion()));
 
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);

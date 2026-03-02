@@ -17,23 +17,22 @@ public class SprayCanItem extends Item { // Должно быть Item, а не 
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
-        BlockPos wallPos = context.getClickedPos(); // Блок, по которому кликнули (напр. камень)
-        Direction face = context.getClickedFace();  // Сторона блока
-        BlockPos canvasPos = wallPos.relative(face); // Место ПЕРЕД блоком
+        BlockPos wallPos = context.getClickedPos();
+        Direction face = context.getClickedFace();
+        BlockPos canvasPos = wallPos.relative(face);
 
-        // Проверяем, можно ли здесь поставить холст (там должен быть воздух или замещаемый блок)
-        BlockState currentState = level.getBlockState(canvasPos);
-        if (currentState.isAir()) {
+        // Проверяем, что блок зарегистрирован, прежде чем вызывать .get()
+        if (!ModBlocks.GRAFFITI_BLOCK.isPresent()) {
+            return InteractionResult.FAIL;
+        }
+
+        if (level.getBlockState(canvasPos).isAir()) {
             if (!level.isClientSide) {
-                // Устанавливаем наш блок-холст
+                // Ставим блок
                 level.setBlock(canvasPos, ModBlocks.GRAFFITI_BLOCK.get().defaultBlockState(), 3);
-
-                // Здесь можно добавить звук "пшика" баллончика
-                // level.playSound(null, canvasPos, SoundEvents.ASSET_SOUND, SoundSource.BLOCKS, 1.0f, 1.0f);
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
-
         return InteractionResult.PASS;
     }
 }
