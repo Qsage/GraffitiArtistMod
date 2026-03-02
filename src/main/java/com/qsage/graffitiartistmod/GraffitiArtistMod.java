@@ -2,8 +2,10 @@ package com.qsage.graffitiartistmod;
 
 import com.mojang.logging.LogUtils;
 import com.qsage.graffitiartistmod.client.renderer.GraffitiBlockEntityRenderer;
+import com.qsage.graffitiartistmod.common.network.ModMessages;
 import com.qsage.graffitiartistmod.common.registration.ModBlockEntities;
 import com.qsage.graffitiartistmod.common.registration.ModBlocks;
+import com.qsage.graffitiartistmod.common.registration.ModItems;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -34,33 +36,33 @@ public class GraffitiArtistMod {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
 
-    // 2. Регистрация самой вкладки
     public static final RegistryObject<CreativeModeTab> GRAFFITI_TAB = CREATIVE_MODE_TABS.register("graffiti_tab", () -> CreativeModeTab.builder()
-            .withTabsBefore(CreativeModeTabs.COMBAT) // Поставить после вкладки с оружием
-            .icon(() -> ModBlocks.GRAFFITI_BLOCK.get().asItem().getDefaultInstance()) // Иконка вкладки (твой блок)
-            .title(net.minecraft.network.chat.Component.translatable("itemGroup.graffiti_tab")) // Ключ перевода
+            .icon(() -> ModBlocks.GRAFFITI_BLOCK.get().asItem().getDefaultInstance())
+            .title(net.minecraft.network.chat.Component.translatable("itemGroup.graffiti_tab"))
             .displayItems((parameters, output) -> {
-                // Список предметов, которые будут внутри этой вкладки:
+                // Использование .get() здесь безопасно, так как метод вызывается только при открытии инвентаря
+                // Но важно убедиться, что у блока ЕСТЬ соответствующий Item
                 output.accept(ModBlocks.GRAFFITI_BLOCK.get());
-                // Сюда можно добавлять другие предметы мода через output.accept(...)
-            })
-            .build());
+
+                // Если у тебя зарегистрирован баллончик в ModItems:
+                output.accept(ModItems.SPRAY_CAN.get());
+            }).build());
 
     @SuppressWarnings("removal")
     public GraffitiArtistMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        ModBlocks.register(modEventBus);
+        ModBlocks.register(modEventBus); // 1. Сначала блоки
+        ModItems.register(modEventBus);  // 2. Потом предметы (они зависят от блоков)
         ModBlockEntities.register(modEventBus);
-
-        // Теперь эта строка увидит переменную выше
         CREATIVE_MODE_TABS.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::addCreative);
 
+        ModMessages.register(); // Убедись, что это вызвано!
+
         MinecraftForge.EVENT_BUS.register(this);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
@@ -68,14 +70,8 @@ public class GraffitiArtistMod {
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        // Добавляем во вкладку "Природные блоки" (Natural Blocks)
-        if (event.getTabKey() == CreativeModeTabs.NATURAL_BLOCKS) {
-            event.accept(ModBlocks.GRAFFITI_BLOCK.get());
-        }
-
-        // Если хочешь добавить во вкладку "Инструменты" (Tools)
         if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
-            // event.accept(ModItems.SPRAY_CAN.get()); // Если будет баллончик
+            event.accept(ModItems.SPRAY_CAN.get());
         }
     }
 

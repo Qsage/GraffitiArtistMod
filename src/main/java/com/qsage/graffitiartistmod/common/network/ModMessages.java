@@ -2,7 +2,6 @@ package com.qsage.graffitiartistmod.common.network;
 
 import com.qsage.graffitiartistmod.GraffitiArtistMod;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
@@ -16,10 +15,9 @@ public class ModMessages {
         return packetId++;
     }
 
-    @SuppressWarnings("removal") // Подавляем предупреждение для версии 1.20.1
+    @SuppressWarnings("removal")
     public static void register() {
         SimpleChannel net = NetworkRegistry.ChannelBuilder
-                // В 1.20.1 этот конструктор обязателен для работы
                 .named(new ResourceLocation(GraffitiArtistMod.MOD_ID, "messages"))
                 .networkProtocolVersion(() -> "1.0")
                 .clientAcceptedVersions(s -> true)
@@ -28,14 +26,15 @@ public class ModMessages {
 
         INSTANCE = net;
 
-        // Регистрируем наш пакет синхронизации
+        // Пакет от Сервера к Клиенту (Синхронизация всего холста)
         net.messageBuilder(PacketSyncGraffiti.class, id(), NetworkDirection.PLAY_TO_CLIENT)
                 .decoder(PacketSyncGraffiti::new)
                 .encoder(PacketSyncGraffiti::toBytes)
                 .consumerMainThread(PacketSyncGraffiti::handle)
                 .add();
 
-        // В методе register() класса ModMessages:
+        // Пакет от Клиента к Серверу (Рисование пикселя)
+        // ВАЖНО: используем NetworkDirection.PLAY_TO_SERVER
         net.messageBuilder(PacketDrawPixel.class, id(), NetworkDirection.PLAY_TO_SERVER)
                 .decoder(PacketDrawPixel::new)
                 .encoder(PacketDrawPixel::toBytes)
@@ -43,7 +42,10 @@ public class ModMessages {
                 .add();
     }
 
-    // Метод для отправки всем игрокам (например, когда кто-то дорисовал)
+    public static <MSG> void sendToServer(MSG message) {
+        INSTANCE.sendToServer(message);
+    }
+
     public static <MSG> void sendToClients(MSG message) {
         INSTANCE.send(PacketDistributor.ALL.noArg(), message);
     }

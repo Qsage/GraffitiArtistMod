@@ -3,6 +3,7 @@ package com.qsage.graffitiartistmod.client.renderer;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.qsage.graffitiartistmod.GraffitiArtistMod;
 import com.qsage.graffitiartistmod.common.blockentity.GraffitiBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -50,16 +51,24 @@ public class GraffitiBlockEntityRenderer implements BlockEntityRenderer<Graffiti
     private ResourceLocation getOrCreateTexture(String id, GraffitiBlockEntity entity) {
         if (!TEXTURE_CACHE.containsKey(id)) {
             DynamicTexture texture = new DynamicTexture(16, 16, true);
-            ResourceLocation loc = new ResourceLocation("graffitiartistmod", "dynamic/" + id.replace(", ", "_"));
+            ResourceLocation loc = new ResourceLocation(GraffitiArtistMod.MOD_ID, "dynamic/" + id.toLowerCase().replace(" ", "_"));
+
+            // Заполняем прозрачным фоном сразу
+            texture.getPixels().fillRect(0, 0, 16, 16, 0x00000000);
+            texture.upload();
+
             Minecraft.getInstance().getTextureManager().register(loc, texture);
             TEXTURE_CACHE.put(id, texture);
             LOCATION_CACHE.put(id, loc);
         }
 
-        if (entity.isDirty()) {
-            updateTexture(TEXTURE_CACHE.get(id), entity.getPixels());
+        DynamicTexture texture = TEXTURE_CACHE.get(id);
+        // ПРОВЕРКА НА NULL: если текстура есть и блок "грязный" (нужно обновить)
+        if (texture != null && entity.isDirty()) {
+            updateTexture(texture, entity.getPixels());
             entity.markClean();
         }
+
         return LOCATION_CACHE.get(id);
     }
 
